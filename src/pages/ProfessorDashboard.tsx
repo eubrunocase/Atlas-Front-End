@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { projectService, Project, ProjectStatus } from "@/services/project.service";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from "@/services/auth.service";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const statusLabels: Record<ProjectStatus, string> = {
   [ProjectStatus.AGUARDANDO_ANALISE_PRELIMINAR]: "Aguardando Análise",
@@ -31,7 +31,7 @@ const getStatusColor = (status: ProjectStatus) => {
 };
 
 const ProfessorDashboard = () => {
-  const { toast } = useToast();
+  const { toast: hookToast } = useToast();
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,14 +39,23 @@ const ProfessorDashboard = () => {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
+        setLoading(true);
         const data = await projectService.getAll();
-        setProjects(data);
+        
+        const projectsData = Array.isArray(data) 
+          ? data 
+          : (data && typeof data === 'object' && Array.isArray(data.data)) 
+            ? data.data 
+            : [];
+            
+        setProjects(projectsData);
+        
+        console.log("Projects API response:", data);
+        console.log("Parsed projects data:", projectsData);
       } catch (error) {
         console.error("Erro ao buscar projetos:", error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar os projetos.",
-          variant: "destructive",
+        toast.error("Erro", {
+          description: "Não foi possível carregar os projetos."
         });
       } finally {
         setLoading(false);
@@ -54,7 +63,7 @@ const ProfessorDashboard = () => {
     };
 
     fetchProjects();
-  }, [toast]);
+  }, []);
 
   const handleLogout = () => {
     authService.logout();
@@ -93,7 +102,7 @@ const ProfessorDashboard = () => {
           ) : (
             <div className="grid grid-cols-1 gap-4">
               {projects.map((project) => (
-                <div key={project.id} className="border rounded-lg p-4">
+                <div key={project.id || Math.random()} className="border rounded-lg p-4">
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="text-lg font-medium">{project.name}</h3>

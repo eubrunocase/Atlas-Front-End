@@ -23,9 +23,11 @@ export interface Project {
 
 // Serviço de projetos
 export const projectService = {
-  async getAll(): Promise<Project[]> {
+  async getAll(): Promise<any> {
     try {
       const response = await api.get('/project');
+      // Log the response for debugging
+      console.log('Project API response:', response);
       return response.data;
     } catch (error) {
       console.error('Erro ao buscar projetos:', error);
