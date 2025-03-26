@@ -8,12 +8,24 @@ export interface Professor {
   password?: string; // opcional para atualizações
 }
 
+// Função auxiliar para verificar e transformar a resposta da API
+const ensureArray = (data: any): any[] => {
+  if (Array.isArray(data)) {
+    return data;
+  } else if (data && typeof data === 'object' && Array.isArray(data.data)) {
+    return data.data;
+  } else if (data && typeof data === 'object') {
+    return [data];
+  }
+  return [];
+};
+
 // Serviço de professores
 export const professorService = {
   async getAll(): Promise<Professor[]> {
     try {
       const response = await api.get('/professor');
-      return response.data;
+      return ensureArray(response.data);
     } catch (error) {
       console.error('Erro ao buscar professores:', error);
       throw error;

@@ -8,12 +8,24 @@ export interface Admin {
   password?: string; // opcional para atualizações
 }
 
+// Função auxiliar para verificar e transformar a resposta da API
+const ensureArray = (data: any): any[] => {
+  if (Array.isArray(data)) {
+    return data;
+  } else if (data && typeof data === 'object' && Array.isArray(data.data)) {
+    return data.data;
+  } else if (data && typeof data === 'object') {
+    return [data];
+  }
+  return [];
+};
+
 // Serviço de administradores
 export const adminService = {
   async getAll(): Promise<Admin[]> {
     try {
       const response = await api.get('/adm');
-      return response.data;
+      return ensureArray(response.data);
     } catch (error) {
       console.error('Erro ao buscar administradores:', error);
       throw error;

@@ -1,6 +1,6 @@
 
 import api from './api';
-import { useToast } from "@/hooks/use-toast";
+import { toast } from 'sonner';
 
 // Tipos para autenticação
 export interface LoginCredentials {
@@ -59,6 +59,7 @@ export const authService = {
   logout(): void {
     localStorage.removeItem('atlas_token');
     localStorage.removeItem('atlas_role');
+    toast.success('Logout realizado com sucesso');
     window.location.href = '/';
   },
 
@@ -72,5 +73,16 @@ export const authService = {
 
   isAdmin(): boolean {
     return this.getRole() === 'ADMINISTRADOR';
+  },
+  
+  isProfessor(): boolean {
+    return this.getRole() === 'PROFESSOR';
+  },
+  
+  getUserInfo(): { authenticated: boolean, role: string | null } {
+    return {
+      authenticated: this.isAuthenticated(),
+      role: this.getRole()
+    };
   }
 };

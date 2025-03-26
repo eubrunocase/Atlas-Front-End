@@ -5,52 +5,59 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { LoginCredentials, authService } from "@/services/auth.service";
+import { RegisterProfessorData, authService } from "@/services/auth.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 
-const loginSchema = z.object({
-  login: z.string().min(1, "Login é obrigatório"),
-  password: z.string().min(1, "Senha é obrigatória"),
+const registerSchema = z.object({
+  login: z.string().min(3, "Login deve ter pelo menos 3 caracteres"),
+  password: z.string().min(6, "Senha deve ter pelo menos 6 caracteres"),
+  confirmPassword: z.string().min(6, "Confirme sua senha"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "As senhas não coincidem",
+  path: ["confirmPassword"],
 });
 
-type LoginFormData = z.infer<typeof loginSchema>;
+type RegisterFormData = z.infer<typeof registerSchema>;
 
-const LoginForm = () => {
+const RegisterForm = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   
-  const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       login: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  const onSubmit = async (data: LoginFormData) => {
+  const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
     try {
-      const response = await authService.login(data);
+      const registerData: RegisterProfessorData = {
+        login: data.login,
+        password: data.password,
+      };
+      
+      await authService.registerProfessor(registerData);
+      
       toast({
-        title: "Login realizado com sucesso",
-        description: `Bem-vindo ao sistema Atlas!`,
+        title: "Cadastro realizado com sucesso",
+        description: "Você já pode fazer login no sistema.",
       });
       
-      // Redireciona baseado no papel do usuário
-      if (authService.isAdmin()) {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/professor/dashboard");
-      }
+      navigate("/login");
     } catch (error) {
-      console.error("Erro no login:", error);
+      console.error("Erro no cadastro:", error);
       toast({
-        title: "Erro ao realizar login",
-        description: "Credenciais inválidas ou servidor indisponível.",
+        title: "Erro ao realizar cadastro",
+        description: "Verifique os dados e tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -61,9 +68,9 @@ const LoginForm = () => {
   return (
     <Card className="w-[400px] mx-auto">
       <CardHeader>
-        <CardTitle>Login</CardTitle>
+        <CardTitle>Cadastro</CardTitle>
         <CardDescription>
-          Acesse o sistema Atlas - Fábrica de Software
+          Crie sua conta como professor para solicitar projetos
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -95,18 +102,31 @@ const LoginForm = () => {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirme a Senha</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="Digite a senha novamente" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Entrando..." : "Entrar"}
+              {isLoading ? "Cadastrando..." : "Cadastrar"}
             </Button>
             
             <div className="text-center mt-4">
               <Button 
                 variant="link" 
                 className="p-0 text-sm text-gray-600"
-                onClick={() => navigate("/register")}
+                onClick={() => navigate("/login")}
                 type="button"
               >
-                Não possui conta? Cadastre-se
+                Já possui conta? Faça login
               </Button>
             </div>
           </form>
@@ -116,4 +136,4 @@ const LoginForm = () => {
   );
 };
 
-export default LoginForm;
+export default RegisterForm;
