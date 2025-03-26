@@ -34,7 +34,14 @@ const LoginForm = () => {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      const response = await authService.login(data);
+      // Cast the data to LoginCredentials since we've ensured both fields will be present
+      // due to the zod validation
+      const credentials: LoginCredentials = {
+        login: data.login,
+        password: data.password
+      };
+      
+      const response = await authService.login(credentials);
       toast({
         title: "Login realizado com sucesso",
         description: `Bem-vindo ao sistema Atlas!`,
