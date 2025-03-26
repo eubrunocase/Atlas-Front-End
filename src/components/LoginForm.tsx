@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -8,14 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
-import { toast } from "sonner";
 
 const LoginForm = () => {
-  const { toast: hookToast } = useToast();
+  const { toast } = useToast();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(false);
-  
   const form = useForm<LoginCredentials>({
     defaultValues: {
       login: "",
@@ -24,42 +20,26 @@ const LoginForm = () => {
   });
 
   const onSubmit = async (data: LoginCredentials) => {
-    setIsLoading(true);
     try {
       const response = await authService.login(data);
-      
-      // Mensagem de sucesso
-      toast.success("Login realizado com sucesso", {
-        description: "Bem-vindo ao sistema Atlas!",
+      toast({
+        title: "Login realizado com sucesso",
+        description: `Bem-vindo ao sistema Atlas!`,
       });
       
-      // Pequeno atraso para mostrar a mensagem antes do redirecionamento
-      setTimeout(() => {
-        // Redireciona baseado no papel do usuário
-        if (authService.isAdmin()) {
-          navigate("/admin/dashboard");
-        } else {
-          navigate("/professor/dashboard");
-        }
-      }, 800);
-      
-    } catch (error: any) {
-      console.error("Erro no login:", error);
-      
-      // Mensagem mais específica com base no erro
-      let errorMessage = "Credenciais inválidas ou servidor indisponível.";
-      
-      if (error.response && error.response.status === 401) {
-        errorMessage = "Usuário ou senha incorretos.";
-      } else if (!error.response) {
-        errorMessage = "Não foi possível conectar ao servidor. Verifique sua conexão.";
+      // Redireciona baseado no papel do usuário
+      if (authService.isAdmin()) {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/professor/dashboard");
       }
-      
-      toast.error("Erro ao realizar login", {
-        description: errorMessage,
+    } catch (error) {
+      console.error("Erro no login:", error);
+      toast({
+        title: "Erro ao realizar login",
+        description: "Credenciais inválidas ou servidor indisponível.",
+        variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -100,20 +80,7 @@ const LoginForm = () => {
                 </FormItem>
               )}
             />
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Conectando...
-                </>
-              ) : (
-                "Entrar"
-              )}
-            </Button>
+            <Button type="submit" className="w-full">Entrar</Button>
           </form>
         </Form>
       </CardContent>
