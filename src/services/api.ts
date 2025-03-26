@@ -2,9 +2,8 @@
 import axios from 'axios';
 import { toast } from 'sonner';
 
-// URL do backend - altere para o endereço IP ou domínio do servidor onde o backend está rodando
-// Por exemplo: 'http://192.168.1.100:8080/atlas' ou 'http://meuservidor.com/atlas'
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/atlas';
+// Base URL do backend - ajuste conforme a sua configuração
+const BASE_URL = 'http://localhost:8080/atlas';
 
 // Instância do axios com configuração base
 const api = axios.create({
