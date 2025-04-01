@@ -5,6 +5,7 @@ import { authService } from "@/services/auth.service";
 import { Button } from "@/components/ui/button";
 import { LogIn, UserPlus, ArrowRight, Code, Sparkles, CheckCircle } from "lucide-react";
 import { motion } from "framer-motion";
+import FetchProfessorsButton from "@/components/FetchProfessorsButton";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -47,7 +48,10 @@ const Index = () => {
       {/* Main Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
         <header className="container mx-auto py-6 px-4">
-          <nav className="flex justify-end">
+          <nav className="flex justify-between items-center">
+            <div>
+              <FetchProfessorsButton />
+            </div>
             <a 
               href="https://ucsal.br" 
               target="_blank" 
