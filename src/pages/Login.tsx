@@ -3,6 +3,7 @@ import LoginForm from "@/components/LoginForm";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import ServerStatusChecker from "@/components/ServerStatusChecker";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -19,14 +20,18 @@ const Login = () => {
         </Button>
         
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Atlas</h1>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">plmds me salva</h1>
           <p className="text-gray-600 mt-2">Sistema de Gestão da Fábrica de Software</p>
+        </div>
+        
+        <div className="mb-4">
+          <ServerStatusChecker serverUrl="http://localhost:8080/atlas" />
         </div>
         
         <LoginForm />
         
         <p className="text-center text-xs text-gray-500 mt-8">
-          © {new Date().getFullYear()} Atlas - Todos os direitos reservados
+          © {new Date().getFullYear()} plmds me salva - Todos os direitos reservados
         </p>
       </div>
     </div>
