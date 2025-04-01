@@ -1,3 +1,4 @@
+
 import api from './api';
 import { toast } from 'sonner';
 
@@ -27,10 +28,16 @@ export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     try {
       const response = await api.post('/auth/login', credentials);
-      // Salvar token no localStorage
-      localStorage.setItem('atlas_token', response.data.token);
-      localStorage.setItem('atlas_role', response.data.role);
-      return response.data;
+      
+      // Verificar se a resposta contém token e role
+      if (response.data && response.data.token) {
+        // Salvar token no localStorage
+        localStorage.setItem('atlas_token', response.data.token);
+        localStorage.setItem('atlas_role', response.data.role);
+        return response.data;
+      } else {
+        throw new Error('Resposta de autenticação inválida');
+      }
     } catch (error) {
       console.error('Erro ao realizar login:', error);
       throw error;

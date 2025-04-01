@@ -2,7 +2,7 @@
 import axios from 'axios';
 import { toast } from 'sonner';
 
-// Base URL do backend - ajuste conforme a sua configuração
+// Base URL do backend - pode ser configurada de acordo com o ambiente
 const BASE_URL = 'http://localhost:8080/atlas';
 
 // Instância do axios com configuração base
@@ -58,5 +58,10 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// Função para alterar a URL base da API
+export const configureApiBaseUrl = (newBaseUrl: string) => {
+  api.defaults.baseURL = newBaseUrl;
+};
 
 export default api;
