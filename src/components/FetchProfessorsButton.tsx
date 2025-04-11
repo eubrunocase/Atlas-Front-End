@@ -26,13 +26,13 @@ const FetchProfessorsButton = () => {
       if (error?.response?.status === 403) {
         toast.error("Acesso negado. Você não tem permissão para acessar esta lista.");
       } else if (error?.response?.status === 401) {
-        toast.error("Autenticação necessária. Por favor, faça login novamente.");
+        toast.error("Autenticação necessária. Por favor, faça login para acessar.");
         // Redirecionando para login se não estiver autenticado
         setTimeout(() => {
           window.location.href = '/login';
         }, 2000);
-      } else if (error.message && error.message.includes("Network Error")) {
-        toast.error("Erro de conexão. Verifique se o servidor está online.");
+      } else if (error.message && (error.message.includes("Network Error") || error.message.includes("Failed to fetch"))) {
+        toast.error("Erro de conexão. Verifique se o servidor está online na porta 8080.");
       } else {
         toast.error("Erro ao buscar professores. Verifique o console para mais detalhes.");
       }
