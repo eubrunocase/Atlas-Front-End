@@ -11,7 +11,10 @@ const FetchProfessorsButton = () => {
   const handleFetchProfessors = async () => {
     setIsLoading(true);
     try {
-      await refetch();
+      console.log("Iniciando busca de professores...");
+      
+      const result = await refetch();
+      console.log("Resultado da busca:", result);
       
       if (professors && professors.length > 0) {
         toast.success(`${professors.length} professores carregados com sucesso!`);
@@ -32,9 +35,9 @@ const FetchProfessorsButton = () => {
           window.location.href = '/login';
         }, 2000);
       } else if (error.message && (error.message.includes("Network Error") || error.message.includes("Failed to fetch"))) {
-        toast.error("Erro de conexão. Verifique se o servidor backend está online na porta 8080.");
+        toast.error("Erro de conexão com o servidor. Como o frontend e o backend estão na mesma porta (8080), verifique se há conflitos no uso da porta.");
       } else {
-        toast.error("Erro ao buscar professores. Verifique o console para mais detalhes.");
+        toast.error(`Erro ao buscar professores: ${error.message || 'Erro desconhecido'}. Verifique o console para mais detalhes.`);
       }
     } finally {
       setIsLoading(false);

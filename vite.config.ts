@@ -8,7 +8,19 @@ import { componentTagger } from "lovable-tagger";
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
-    port: 3000, // Alterado para porta 3000 para não conflitar com o backend na porta 8080
+    port: 8080, // Usando porta 8080 conforme solicitado
+    proxy: {
+      // Configuração de proxy para evitar problemas de CORS
+      '/atlas': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            console.log('Erro de proxy:', err);
+          });
+        },
+      },
+    },
   },
   plugins: [
     react(),
