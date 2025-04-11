@@ -32,7 +32,7 @@ const ServerStatusChecker: React.FC<ServerStatusCheckerProps> = ({ serverUrl }) 
           } else if (error.message.includes('timeout')) {
             setMessage('Timeout: O servidor não está respondendo ou está muito lento.');
           } else if (error.message.includes('Network Error')) {
-            setMessage('Erro de rede: Não foi possível conectar ao servidor. Verifique se ele está ligado.');
+            setMessage('Erro de rede: Não foi possível conectar ao servidor. Verifique se o backend está rodando na porta 8080.');
           } else {
             setMessage(`Erro: ${error.message}`);
           }
@@ -51,7 +51,7 @@ const ServerStatusChecker: React.FC<ServerStatusCheckerProps> = ({ serverUrl }) 
         <Loader2 className="h-4 w-4 animate-spin" />
         <AlertTitle>Verificando servidor</AlertTitle>
         <AlertDescription>
-          Estamos verificando se o servidor está disponível...
+          Estamos verificando se o servidor backend está disponível...
         </AlertDescription>
       </Alert>
     );
@@ -63,7 +63,7 @@ const ServerStatusChecker: React.FC<ServerStatusCheckerProps> = ({ serverUrl }) 
         <CheckCircle className="h-4 w-4 text-green-600" />
         <AlertTitle className="text-green-600">Servidor online</AlertTitle>
         <AlertDescription>
-          O servidor está respondendo normalmente.
+          O servidor backend está respondendo normalmente.
         </AlertDescription>
       </Alert>
     );
@@ -74,7 +74,7 @@ const ServerStatusChecker: React.FC<ServerStatusCheckerProps> = ({ serverUrl }) 
       <AlertTriangle className="h-4 w-4 text-amber-600" />
       <AlertTitle className="text-amber-600">Servidor offline</AlertTitle>
       <AlertDescription>
-        {message || 'Não foi possível conectar ao servidor. Verifique se ele está em execução.'}
+        {message || 'Não foi possível conectar ao servidor backend. Verifique se ele está em execução na porta 8080.'}
       </AlertDescription>
     </Alert>
   );

@@ -32,7 +32,7 @@ const FetchProfessorsButton = () => {
           window.location.href = '/login';
         }, 2000);
       } else if (error.message && (error.message.includes("Network Error") || error.message.includes("Failed to fetch"))) {
-        toast.error("Erro de conexão. Verifique se o servidor está online na porta 8080.");
+        toast.error("Erro de conexão. Verifique se o servidor backend está online na porta 8080.");
       } else {
         toast.error("Erro ao buscar professores. Verifique o console para mais detalhes.");
       }
