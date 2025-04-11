@@ -12,11 +12,30 @@ const FetchProfessorsButton = () => {
     setIsLoading(true);
     try {
       await refetch();
-      toast.success(`${professors.length} professores carregados com sucesso!`);
-      console.log("Professores carregados:", professors);
-    } catch (error) {
+      
+      if (professors && professors.length > 0) {
+        toast.success(`${professors.length} professores carregados com sucesso!`);
+        console.log("Professores carregados:", professors);
+      } else {
+        toast.success("Lista de professores carregada (vazia ou não disponível)");
+      }
+    } catch (error: any) {
       console.error("Erro ao buscar professores:", error);
-      toast.error("Erro ao buscar professores. Verifique o console para mais detalhes.");
+      
+      // Verificando o tipo específico de erro para dar mensagens mais claras
+      if (error?.response?.status === 403) {
+        toast.error("Acesso negado. Você não tem permissão para acessar esta lista.");
+      } else if (error?.response?.status === 401) {
+        toast.error("Autenticação necessária. Por favor, faça login novamente.");
+        // Redirecionando para login se não estiver autenticado
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
+      } else if (error.message && error.message.includes("Network Error")) {
+        toast.error("Erro de conexão. Verifique se o servidor está online.");
+      } else {
+        toast.error("Erro ao buscar professores. Verifique o console para mais detalhes.");
+      }
     } finally {
       setIsLoading(false);
     }

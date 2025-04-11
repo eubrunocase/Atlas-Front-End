@@ -19,7 +19,7 @@ const api = axios.create({
 // Interceptor para incluir o token JWT em todas as requisições
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('plmds_me_salva_token');
+    const token = localStorage.getItem('atlas_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -38,8 +38,8 @@ api.interceptors.response.use(
       
       if (status === 401) {
         // Token expirado ou inválido
-        localStorage.removeItem('plmds_me_salva_token');
-        localStorage.removeItem('plmds_me_salva_role');
+        localStorage.removeItem('atlas_token');
+        localStorage.removeItem('atlas_role');
         toast.error('Sessão expirada. Por favor, faça login novamente.');
         window.location.href = '/login';
       } else if (status === 403) {
