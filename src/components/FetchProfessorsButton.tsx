@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useProfessors } from "@/hooks/useProfessors";
@@ -16,7 +15,6 @@ const FetchProfessorsButton = () => {
   const navigate = useNavigate();
   const isAdmin = authService.isAdmin();
 
-  // Verificar autenticação e papel no carregamento do componente
   useEffect(() => {
     const checkUserRole = () => {
       const token = localStorage.getItem('atlas_token');
@@ -27,12 +25,10 @@ const FetchProfessorsButton = () => {
       console.log("Papel do usuário:", userRole);
       console.log("É admin?", authService.isAdmin());
       
-      // Se não estiver autenticado, mostrar alerta
       if (!token) {
         setShowAuthAlert(true);
         setErrorMessage("Você precisa estar logado para acessar esta lista. Por favor, faça login primeiro.");
       } 
-      // Se estiver autenticado mas não for admin, mostrar alerta
       else if (!authService.isAdmin()) {
         setShowAuthAlert(true);
         setErrorMessage(`Você está logado com o papel ${userRole}, mas este recurso requer o papel ADMINISTRADOR. Por favor, faça login com uma conta de administrador.`);
@@ -51,21 +47,18 @@ const FetchProfessorsButton = () => {
     try {
       console.log("Iniciando busca de professores...");
       
-      // Verificar autenticação e papel antes de fazer a requisição
       if (!authService.isAuthenticated()) {
         console.log("Usuário não autenticado");
         setShowAuthAlert(true);
         setErrorMessage("Você precisa estar logado para acessar esta lista. Por favor, faça login primeiro.");
         toast.error("Você precisa estar logado para acessar esta lista");
         
-        // Redirecionando para login
         setTimeout(() => {
           navigate('/login');
         }, 2000);
         return;
       }
       
-      // Verificar se o usuário é um administrador
       if (!authService.isAdmin()) {
         console.log("Usuário não é administrador");
         const userRole = localStorage.getItem('atlas_role');
@@ -75,7 +68,6 @@ const FetchProfessorsButton = () => {
         return;
       }
       
-      // Adicionando mais informações de debug
       console.log("Token JWT:", localStorage.getItem('atlas_token'));
       console.log("Papel do usuário:", authService.getRole());
       
@@ -91,7 +83,6 @@ const FetchProfessorsButton = () => {
     } catch (error: any) {
       console.error("Erro ao buscar professores:", error);
       
-      // Verificando o tipo específico de erro para dar mensagens mais claras
       if (error?.response?.status === 403) {
         const userRole = localStorage.getItem('atlas_role');
         const errorMsg = `Acesso negado. Seu papel atual (${userRole || 'desconhecido'}) não tem permissão para acessar esta lista. Você precisa ser um administrador.`;
@@ -107,10 +98,8 @@ const FetchProfessorsButton = () => {
         setShowAuthAlert(true);
         setErrorMessage(errorMsg);
         
-        // Limpar credenciais inválidas
         authService.logout();
         
-        // Redirecionando para login
         setTimeout(() => {
           navigate('/login');
         }, 2000);
@@ -151,7 +140,7 @@ const FetchProfessorsButton = () => {
       </Button>
       
       {!isAdmin && !showAuthAlert && (
-        <Alert variant="warning" className="mt-2">
+        <Alert variant="destructive" className="mt-2">
           <Info className="h-4 w-4" />
           <AlertTitle>Acesso restrito</AlertTitle>
           <AlertDescription>

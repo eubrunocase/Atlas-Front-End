@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -44,8 +43,6 @@ const LoginForm = () => {
     setIsNullRoleError(false);
     
     try {
-      // Cast the data to LoginCredentials since we've ensured both fields will be present
-      // due to the zod validation
       const credentials: LoginCredentials = {
         login: data.login,
         password: data.password
@@ -53,12 +50,11 @@ const LoginForm = () => {
       
       console.log("Tentando login com credenciais:", {
         login: credentials.login,
-        password: "********" // não logar a senha real
+        password: "********"
       });
       
       const response = await authService.login(credentials);
       
-      // Verificar se o papel recebido é válido
       if (!response.role) {
         setIsNullRoleError(true);
         setLoginError("O usuário não tem um papel (role) definido no sistema. Entre em contato com o administrador.");
@@ -72,7 +68,6 @@ const LoginForm = () => {
         description: `Bem-vindo ao sistema! Você está logado como ${response.role}.`,
       });
       
-      // Redireciona baseado no papel do usuário
       if (authService.isAdmin()) {
         navigate("/admin/dashboard");
       } else {
@@ -81,7 +76,6 @@ const LoginForm = () => {
     } catch (error: any) {
       console.error("Erro no login:", error);
       
-      // Verificando se é um erro relacionado a papel nulo
       if (
         (error?.message && error.message.includes('NullPointerException') && error.message.includes('role')) ||
         (error?.stack && error.stack.includes('Users.getAuthorities') && error.stack.includes('null'))
@@ -96,7 +90,6 @@ const LoginForm = () => {
         setCorsError(true);
         setLoginError("Erro de conexão com o servidor. Verifique se o backend está rodando.");
       } else {
-        // Verificar se é erro de CORS
         if (error instanceof Error && 
            (error.message.includes('CORS') || 
             error.message.includes('Network Error') ||
@@ -139,7 +132,7 @@ const LoginForm = () => {
           )}
           
           {isNullRoleError && (
-            <Alert variant="warning" className="mb-4">
+            <Alert variant="destructive" className="mb-4">
               <Info className="h-4 w-4" />
               <AlertTitle>Problema com papel do usuário</AlertTitle>
               <AlertDescription>
