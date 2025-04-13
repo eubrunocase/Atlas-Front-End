@@ -71,11 +71,7 @@ api.interceptors.response.use(
       localStorage.removeItem('atlas_role');
       
       toast.error('O usuário não tem um papel (role) definido no sistema ou o papel está incorreto. Entre em contato com o administrador.');
-      
-      // Redirecionar para login após 2 segundos
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 2000);
+    
       
       return Promise.reject(error);
     }
@@ -111,7 +107,7 @@ api.interceptors.response.use(
           // Se não tiver token, redirecionar para login
           if (!localStorage.getItem('atlas_token')) {
             setTimeout(() => {
-              window.location.href = '/login';
+          
             }, 2000);
           }
         }
