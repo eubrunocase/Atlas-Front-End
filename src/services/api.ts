@@ -11,6 +11,7 @@ const api = axios.create({
   // Configurando headers para CORS
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
   withCredentials: true // Importante para autenticação com cookies
 });
@@ -23,10 +24,15 @@ api.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
     
+    // Adicionando headers para CORS
+    config.headers['Access-Control-Allow-Origin'] = '*';
+    
     // Log para debug
     console.log(`Enviando requisição para: ${config.url}`, {
       headers: config.headers,
-      method: config.method
+      method: config.method,
+      baseURL: config.baseURL,
+      data: config.data
     });
     
     return config;
@@ -95,7 +101,9 @@ api.interceptors.response.use(
   }
 );
 
-// Função para alterar a URL base da API
+// Atualizando a configuração do proxy no vite.config.ts
+// Vamos atualizar o arquivo para garantir que as requisições sejam devidamente redirecionadas
+
 export const configureApiBaseUrl = (newBaseUrl: string) => {
   api.defaults.baseURL = newBaseUrl;
   console.log(`URL da API alterada para: ${newBaseUrl}`);
