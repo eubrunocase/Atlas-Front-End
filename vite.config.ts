@@ -11,11 +11,11 @@ export default defineConfig(({ mode }) => ({
     port: 8080, // Usando porta 8080 conforme solicitado
     proxy: {
       // Configuração de proxy para evitar problemas de CORS
-      '/atlas': {
+      '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/atlas/, ''),
+        rewrite: (path) => path.replace(/^\/api/, '/atlas'),
         configure: (proxy, _options) => {
           proxy.on('error', (err, _req, _res) => {
             console.log('Erro de proxy:', err);

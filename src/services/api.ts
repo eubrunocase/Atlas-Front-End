@@ -2,8 +2,8 @@
 import axios from 'axios';
 import { toast } from 'sonner';
 
-// Base URL do backend
-const BASE_URL = '/atlas';
+// Base URL para o proxy configurado no Vite
+const BASE_URL = '/api';
 
 // Instância do axios com configuração base e CORS
 const api = axios.create({
@@ -23,9 +23,6 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    
-    // Adicionando headers para CORS
-    config.headers['Access-Control-Allow-Origin'] = '*';
     
     // Log para debug
     console.log(`Enviando requisição para: ${config.url}`, {
@@ -107,7 +104,7 @@ api.interceptors.response.use(
         
         // Mensagem específica para erro de acesso negado
         if (userRole) {
-          toast.error(`Acesso negado. Seu papel atual (${userRole}) não tem permissão para acessar este recurso. Este recurso requer papel de ADMINISTRADOR.`);
+          toast.error(`Acesso negado. Seu papel atual (${userRole}) não tem permissão para acessar este recurso.`);
         } else {
           toast.error('Acesso negado. Você não tem permissão para acessar este recurso. Verifique se você está logado com as credenciais corretas.');
           
