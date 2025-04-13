@@ -59,11 +59,27 @@ api.interceptors.response.use(
     const errorMessage = error?.response?.data?.message || '';
     const errorStack = error?.stack || '';
     
-    if (errorMessage.includes('NullPointerException') || 
-        errorStack.includes('NullPointerException') || 
-        (error.message && error.message.includes('role'))) {
+    // Verificação mais abrangente para identificar problemas com papel de usuário
+    if (
+      errorMessage.includes('NullPointerException') || 
+      errorStack.includes('NullPointerException') || 
+      (error.message && error.message.includes('role')) ||
+      // Nova verificação para casos específicos do erro reportado
+      (errorStack.includes('Users.getAuthorities') && errorStack.includes('null'))
+    ) {
       console.error('Erro de papel do usuário nulo detectado:', error);
-      toast.error('O usuário não tem um papel (role) definido no sistema. Entre em contato com o administrador.');
+      
+      // Limpar autenticação para forçar novo login
+      localStorage.removeItem('atlas_token');
+      localStorage.removeItem('atlas_role');
+      
+      toast.error('O usuário não tem um papel (role) definido no sistema ou o papel está incorreto. Entre em contato com o administrador.');
+      
+      // Redirecionar para login após 2 segundos
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
+      
       return Promise.reject(error);
     }
     
@@ -84,13 +100,23 @@ api.interceptors.response.use(
         }
       } else if (status === 403) {
         console.log('Erro 403 - Acesso negado');
-        toast.error('Acesso negado. Você não tem permissão para acessar este recurso. Verifique se você está logado com as credenciais corretas.');
         
-        // Se não estiver na página de login e não tiver token, redirecionar para login
-        if (!window.location.pathname.includes('/login') && !localStorage.getItem('atlas_token')) {
-          setTimeout(() => {
-            window.location.href = '/login';
-          }, 2000);
+        // Verificar a role do usuário
+        const userRole = localStorage.getItem('atlas_role');
+        console.log(`Role do usuário atual: ${userRole}`);
+        
+        // Mensagem específica para erro de acesso negado
+        if (userRole) {
+          toast.error(`Acesso negado. Seu papel atual (${userRole}) não tem permissão para acessar este recurso. Este recurso requer papel de ADMINISTRADOR.`);
+        } else {
+          toast.error('Acesso negado. Você não tem permissão para acessar este recurso. Verifique se você está logado com as credenciais corretas.');
+          
+          // Se não tiver token, redirecionar para login
+          if (!localStorage.getItem('atlas_token')) {
+            setTimeout(() => {
+              window.location.href = '/login';
+            }, 2000);
+          }
         }
       } else if (status === 404) {
         toast.error('Recurso não encontrado no servidor.');

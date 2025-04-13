@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useProfessors } from "@/hooks/useProfessors";
 import { toast } from "sonner";
@@ -14,16 +14,44 @@ const FetchProfessorsButton = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const { professors, refetch } = useProfessors();
   const navigate = useNavigate();
+  const isAdmin = authService.isAdmin();
+
+  // Verificar autenticação e papel no carregamento do componente
+  useEffect(() => {
+    const checkUserRole = () => {
+      const token = localStorage.getItem('atlas_token');
+      const userRole = localStorage.getItem('atlas_role');
+      
+      console.log("Verificando autenticação de usuário:");
+      console.log("Token existe:", !!token);
+      console.log("Papel do usuário:", userRole);
+      console.log("É admin?", authService.isAdmin());
+      
+      // Se não estiver autenticado, mostrar alerta
+      if (!token) {
+        setShowAuthAlert(true);
+        setErrorMessage("Você precisa estar logado para acessar esta lista. Por favor, faça login primeiro.");
+      } 
+      // Se estiver autenticado mas não for admin, mostrar alerta
+      else if (!authService.isAdmin()) {
+        setShowAuthAlert(true);
+        setErrorMessage(`Você está logado com o papel ${userRole}, mas este recurso requer o papel ADMINISTRADOR. Por favor, faça login com uma conta de administrador.`);
+      } else {
+        setShowAuthAlert(false);
+        setErrorMessage("");
+      }
+    };
+    
+    checkUserRole();
+  }, []);
 
   const handleFetchProfessors = async () => {
     setIsLoading(true);
-    setShowAuthAlert(false);
-    setErrorMessage("");
     
     try {
       console.log("Iniciando busca de professores...");
       
-      // Verificar autenticação antes de fazer a requisição
+      // Verificar autenticação e papel antes de fazer a requisição
       if (!authService.isAuthenticated()) {
         console.log("Usuário não autenticado");
         setShowAuthAlert(true);
@@ -33,7 +61,17 @@ const FetchProfessorsButton = () => {
         // Redirecionando para login
         setTimeout(() => {
           navigate('/login');
-        }, 3000);
+        }, 2000);
+        return;
+      }
+      
+      // Verificar se o usuário é um administrador
+      if (!authService.isAdmin()) {
+        console.log("Usuário não é administrador");
+        const userRole = localStorage.getItem('atlas_role');
+        setShowAuthAlert(true);
+        setErrorMessage(`Você está logado com o papel ${userRole}, mas este recurso requer o papel ADMINISTRADOR. Por favor, faça login com uma conta de administrador.`);
+        toast.error("Acesso negado. Você precisa ser um administrador.");
         return;
       }
       
@@ -55,7 +93,8 @@ const FetchProfessorsButton = () => {
       
       // Verificando o tipo específico de erro para dar mensagens mais claras
       if (error?.response?.status === 403) {
-        const errorMsg = "Acesso negado. Você não tem permissão para acessar esta lista. Você precisa ser um administrador.";
+        const userRole = localStorage.getItem('atlas_role');
+        const errorMsg = `Acesso negado. Seu papel atual (${userRole || 'desconhecido'}) não tem permissão para acessar esta lista. Você precisa ser um administrador.`;
         toast.error(errorMsg);
         setShowAuthAlert(true);
         setErrorMessage(errorMsg);
@@ -105,11 +144,21 @@ const FetchProfessorsButton = () => {
       
       <Button 
         onClick={handleFetchProfessors}
-        disabled={isLoading}
-        className="bg-blue-600 hover:bg-blue-700"
+        disabled={isLoading || !isAdmin}
+        className={`${isAdmin ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'}`}
       >
         {isLoading ? "Carregando..." : "Buscar Professores"}
       </Button>
+      
+      {!isAdmin && !showAuthAlert && (
+        <Alert variant="warning" className="mt-2">
+          <Info className="h-4 w-4" />
+          <AlertTitle>Acesso restrito</AlertTitle>
+          <AlertDescription>
+            Esta funcionalidade está disponível apenas para administradores.
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };

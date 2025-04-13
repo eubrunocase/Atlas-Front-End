@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import CorsErrorHelper from "./CorsErrorHelper";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Info } from "lucide-react";
 
 const loginSchema = z.object({
   login: z.string().min(1, "Login é obrigatório"),
@@ -27,6 +27,7 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [corsError, setCorsError] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [isNullRoleError, setIsNullRoleError] = useState(false);
   
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -40,6 +41,8 @@ const LoginForm = () => {
     setIsLoading(true);
     setCorsError(false);
     setLoginError(null);
+    setIsNullRoleError(false);
+    
     try {
       // Cast the data to LoginCredentials since we've ensured both fields will be present
       // due to the zod validation
@@ -48,10 +51,25 @@ const LoginForm = () => {
         password: data.password
       };
       
+      console.log("Tentando login com credenciais:", {
+        login: credentials.login,
+        password: "********" // não logar a senha real
+      });
+      
       const response = await authService.login(credentials);
+      
+      // Verificar se o papel recebido é válido
+      if (!response.role) {
+        setIsNullRoleError(true);
+        setLoginError("O usuário não tem um papel (role) definido no sistema. Entre em contato com o administrador.");
+        console.error("Login realizado mas papel (role) é nulo", response);
+        return;
+      }
+      
+      console.log("Login bem-sucedido. Papel recebido:", response.role);
       toast({
         title: "Login realizado com sucesso",
-        description: `Bem-vindo ao sistema!`,
+        description: `Bem-vindo ao sistema! Você está logado como ${response.role}.`,
       });
       
       // Redireciona baseado no papel do usuário
@@ -64,7 +82,11 @@ const LoginForm = () => {
       console.error("Erro no login:", error);
       
       // Verificando se é um erro relacionado a papel nulo
-      if (error?.message && error.message.includes('NullPointerException') && error.message.includes('role')) {
+      if (
+        (error?.message && error.message.includes('NullPointerException') && error.message.includes('role')) ||
+        (error?.stack && error.stack.includes('Users.getAuthorities') && error.stack.includes('null'))
+      ) {
+        setIsNullRoleError(true);
         setLoginError("Erro no cadastro do usuário: O papel (role) do usuário não está definido. Entre em contato com o administrador.");
       } else if (error?.response?.status === 401) {
         setLoginError("Credenciais inválidas. Verifique seu login e senha.");
@@ -112,6 +134,18 @@ const LoginForm = () => {
               <AlertTitle>Erro de autenticação</AlertTitle>
               <AlertDescription>
                 {loginError}
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {isNullRoleError && (
+            <Alert variant="warning" className="mb-4">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Problema com papel do usuário</AlertTitle>
+              <AlertDescription>
+                Seu usuário não tem um papel (role) configurado no sistema. 
+                Este é um problema no banco de dados que precisa ser corrigido por um administrador. 
+                Por favor, entre em contato com o suporte técnico.
               </AlertDescription>
             </Alert>
           )}
