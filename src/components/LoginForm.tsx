@@ -11,6 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import CorsErrorHelper from "./CorsErrorHelper";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 const loginSchema = z.object({
   login: z.string().min(1, "Login é obrigatório"),
@@ -24,6 +26,7 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [corsError, setCorsError] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
   
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -36,6 +39,7 @@ const LoginForm = () => {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setCorsError(false);
+    setLoginError(null);
     try {
       // Cast the data to LoginCredentials since we've ensured both fields will be present
       // due to the zod validation
@@ -47,7 +51,7 @@ const LoginForm = () => {
       const response = await authService.login(credentials);
       toast({
         title: "Login realizado com sucesso",
-        description: `Bem-vindo ao sistema plmds me salva!`,
+        description: `Bem-vindo ao sistema!`,
       });
       
       // Redireciona baseado no papel do usuário
@@ -56,20 +60,35 @@ const LoginForm = () => {
       } else {
         navigate("/professor/dashboard");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro no login:", error);
       
-      // Verificar se é erro de CORS
-      if (error instanceof Error && 
-         (error.message.includes('CORS') || 
-          error.message.includes('Network Error') ||
-          error.toString().includes('Network Error'))) {
+      // Verificando se é um erro relacionado a papel nulo
+      if (error?.message && error.message.includes('NullPointerException') && error.message.includes('role')) {
+        setLoginError("Erro no cadastro do usuário: O papel (role) do usuário não está definido. Entre em contato com o administrador.");
+      } else if (error?.response?.status === 401) {
+        setLoginError("Credenciais inválidas. Verifique seu login e senha.");
+      } else if (error?.response?.status === 403) {
+        setLoginError("Acesso negado. Você não tem permissão para acessar o sistema.");
+      } else if (error?.message?.includes('NetworkError') || error?.message?.includes('Network Error')) {
         setCorsError(true);
+        setLoginError("Erro de conexão com o servidor. Verifique se o backend está rodando.");
+      } else {
+        // Verificar se é erro de CORS
+        if (error instanceof Error && 
+           (error.message.includes('CORS') || 
+            error.message.includes('Network Error') ||
+            error.toString().includes('Network Error'))) {
+          setCorsError(true);
+          setLoginError("Erro de CORS: O servidor não está aceitando requisições deste domínio.");
+        } else {
+          setLoginError("Ocorreu um erro no login. Tente novamente mais tarde.");
+        }
       }
       
       toast({
         title: "Erro ao realizar login",
-        description: "Credenciais inválidas ou servidor indisponível.",
+        description: "Verifique as credenciais ou se o servidor está disponível.",
         variant: "destructive",
       });
     } finally {
@@ -87,6 +106,16 @@ const LoginForm = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {loginError && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Erro de autenticação</AlertTitle>
+              <AlertDescription>
+                {loginError}
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField

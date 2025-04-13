@@ -2,8 +2,8 @@
 import axios from 'axios';
 import { toast } from 'sonner';
 
-// Base URL do backend - pode ser configurada de acordo com o ambiente
-const BASE_URL = '/atlas'; // Usando caminho relativo para utilizar o proxy
+// Base URL do backend
+const BASE_URL = '/atlas';
 
 // Instância do axios com configuração base e CORS
 const api = axios.create({
@@ -55,6 +55,18 @@ api.interceptors.response.use(
   (error) => {
     console.error('Erro na resposta:', error);
     
+    // Verificando se há uma mensagem específica no erro que indica usuário com papel nulo
+    const errorMessage = error?.response?.data?.message || '';
+    const errorStack = error?.stack || '';
+    
+    if (errorMessage.includes('NullPointerException') || 
+        errorStack.includes('NullPointerException') || 
+        (error.message && error.message.includes('role'))) {
+      console.error('Erro de papel do usuário nulo detectado:', error);
+      toast.error('O usuário não tem um papel (role) definido no sistema. Entre em contato com o administrador.');
+      return Promise.reject(error);
+    }
+    
     if (error.response) {
       // O servidor respondeu com um status de erro
       const status = error.response.status;
@@ -64,7 +76,7 @@ api.interceptors.response.use(
         console.log('Erro 401 - Não autorizado');
         localStorage.removeItem('atlas_token');
         localStorage.removeItem('atlas_role');
-        toast.error('Sessão expirada. Por favor, faça login novamente.');
+        toast.error('Sessão expirada ou credenciais inválidas. Por favor, faça login novamente.');
         
         // Redirecionar apenas se não estivermos já na página de login
         if (!window.location.pathname.includes('/login')) {
@@ -72,12 +84,21 @@ api.interceptors.response.use(
         }
       } else if (status === 403) {
         console.log('Erro 403 - Acesso negado');
-        toast.error('Acesso negado. Você não tem permissão para acessar este recurso.');
+        toast.error('Acesso negado. Você não tem permissão para acessar este recurso. Verifique se você está logado com as credenciais corretas.');
+        
+        // Se não estiver na página de login e não tiver token, redirecionar para login
+        if (!window.location.pathname.includes('/login') && !localStorage.getItem('atlas_token')) {
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 2000);
+        }
       } else if (status === 404) {
         toast.error('Recurso não encontrado no servidor.');
       } else if (status === 400) {
-        const errorMessage = error.response.data?.message || 'Dados inválidos fornecidos.';
-        toast.error(errorMessage);
+        const serverErrorMessage = error.response.data?.message || 'Dados inválidos fornecidos.';
+        toast.error(serverErrorMessage);
+      } else if (status === 500) {
+        toast.error(`Erro interno do servidor. Detalhes: ${error.response.data?.message || 'Ocorreu um erro no servidor.'}`);
       } else {
         // Erro genérico
         toast.error(`Erro ${status}: ${error.response.data?.message || 'Ocorreu um erro no servidor.'}`);
@@ -88,7 +109,7 @@ api.interceptors.response.use(
       if (error.message && error.message.includes('CORS')) {
         toast.error('Erro de CORS: Verifique se o servidor está configurado para aceitar requisições deste domínio.');
       } else if (error.message && error.message.includes('Network Error')) {
-        toast.error('Erro de rede: Não foi possível conectar ao servidor. Verifique se o backend está em execução.');
+        toast.error('Erro de rede: Não foi possível conectar ao servidor. Verifique se o backend está em execução na porta 8080.');
       } else {
         toast.error('Não foi possível conectar ao servidor. Verifique sua conexão de rede.');
       }
@@ -100,9 +121,6 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
-
-// Atualizando a configuração do proxy no vite.config.ts
-// Vamos atualizar o arquivo para garantir que as requisições sejam devidamente redirecionadas
 
 export const configureApiBaseUrl = (newBaseUrl: string) => {
   api.defaults.baseURL = newBaseUrl;
