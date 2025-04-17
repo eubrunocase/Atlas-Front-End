@@ -12,6 +12,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import CorsErrorHelper from "./CorsErrorHelper";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, Info } from "lucide-react";
+import { userService } from "@/services/user.service";
 
 const loginSchema = z.object({
   login: z.string().min(1, "Login é obrigatório"),
@@ -27,7 +28,7 @@ const LoginForm = () => {
   const [corsError, setCorsError] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
   const [isNullRoleError, setIsNullRoleError] = useState(false);
-  
+
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -41,40 +42,31 @@ const LoginForm = () => {
     setCorsError(false);
     setLoginError(null);
     setIsNullRoleError(false);
-    
+
     try {
       const credentials: LoginCredentials = {
         login: data.login,
         password: data.password
       };
-      
-      console.log("Tentando login com credenciais:", {
-        login: credentials.login,
-        password: "********"
-      });
-      
+
       const response = await authService.login(credentials);
-      
-      if (!response.role) {
-        setIsNullRoleError(true);
-        setLoginError("O usuário não tem um papel (role) definido no sistema. Entre em contato com o administrador.");
-        console.error("Login realizado mas papel (role) é nulo", response);
-        return;
+
+      if (response) {
+        const user = await userService.getUser();
+        console.log(user.role)
+        toast({
+          title: "Login realizado com sucesso",
+          description: `Bem-vindo ao sistema! Você está logado como ${user.role}.`,
+        });
       }
-      
-      console.log("Login bem-sucedido. Papel recebido:", response.role);
-      toast({
-        title: "Login realizado com sucesso",
-        description: `Bem-vindo ao sistema! Você está logado como ${response.role}.`,
-      });
-      
+
       if (authService.isAdmin()) {
         navigate("/admin/dashboard");
       } else {
         navigate("/professor/dashboard");
       }
-    } catch (error: any) {
-      console.error("Erro no login:", error);
+    } catch (error) {
+      console.log("Erro no login:", error);
       
       if (
         (error?.message && error.message.includes('NullPointerException') && error.message.includes('role')) ||
@@ -90,8 +82,8 @@ const LoginForm = () => {
         setCorsError(true);
         setLoginError("Erro de conexão com o servidor. Verifique se o backend está rodando.");
       } else {
-        if (error instanceof Error && 
-           (error.message.includes('CORS') || 
+        if (error instanceof Error &&
+          (error.message.includes('CORS') ||
             error.message.includes('Network Error') ||
             error.toString().includes('Network Error'))) {
           setCorsError(true);
@@ -100,7 +92,7 @@ const LoginForm = () => {
           setLoginError("Ocorreu um erro no login. Tente novamente mais tarde.");
         }
       }
-      
+
       toast({
         title: "Erro ao realizar login",
         description: "Verifique as credenciais ou se o servidor está disponível.",
@@ -130,19 +122,19 @@ const LoginForm = () => {
               </AlertDescription>
             </Alert>
           )}
-          
+
           {isNullRoleError && (
             <Alert variant="destructive" className="mb-4">
               <Info className="h-4 w-4" />
               <AlertTitle>Problema com papel do usuário</AlertTitle>
               <AlertDescription>
-                Seu usuário não tem um papel (role) configurado no sistema. 
-                Este é um problema no banco de dados que precisa ser corrigido por um administrador. 
+                Seu usuário não tem um papel (role) configurado no sistema.
+                Este é um problema no banco de dados que precisa ser corrigido por um administrador.
                 Por favor, entre em contato com o suporte técnico.
               </AlertDescription>
             </Alert>
           )}
-          
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -174,10 +166,10 @@ const LoginForm = () => {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>
-              
+
               <div className="text-center mt-4">
-                <Button 
-                  variant="link" 
+                <Button
+                  variant="link"
                   className="p-0 text-sm text-gray-600"
                   onClick={() => navigate("/register")}
                   type="button"
@@ -189,7 +181,7 @@ const LoginForm = () => {
           </Form>
         </CardContent>
       </Card>
-      
+
       {corsError && <CorsErrorHelper />}
     </>
   );

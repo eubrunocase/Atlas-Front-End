@@ -25,6 +25,7 @@ export const professorService = {
   async getAll(): Promise<Professor[]> {
     try {
       const response = await api.get('/professor');
+      console.log("dados da resposta: ", response.data)
       return ensureArray(response.data);
     } catch (error) {
       console.error('Erro ao buscar professores:', error);

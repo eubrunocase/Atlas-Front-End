@@ -1,6 +1,7 @@
 import api from './api';
 import { toast } from 'sonner';
 import { jwtDecode } from 'jwt-decode';
+import { userService } from './user.service';
 
 // Tipos para autenticação
 export interface LoginCredentials {
@@ -20,7 +21,7 @@ export interface RegisterAdminData {
 
 export interface AuthResponse {
   token: string;
-  role: string;
+  role?: string;
 }
 
 interface JwtPayload {
@@ -29,25 +30,23 @@ interface JwtPayload {
 }
 
 const TOKEN_KEY = 'atlas_token';
-const ROLE_KEY = 'atlas_role';
 
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<AuthResponse> {
+  async login(credentials: LoginCredentials): Promise<AuthResponse | null> {
     try {
       const response = await api.post('/auth/login', credentials);
+      const token = response.data?.token;
 
-      if (response.data?.token) {
-        localStorage.setItem(TOKEN_KEY, response.data.token);
-        localStorage.setItem(ROLE_KEY, response.data.role);
-        toast.success('Login realizado com sucesso!');
-        return response.data;
+      if (token) {
+        localStorage.setItem(TOKEN_KEY, token);
+        return response.data as AuthResponse;
       } else {
         throw new Error('Resposta de autenticação inválida.');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro ao realizar login:', error);
       toast.error(error?.response?.data?.message || 'Falha ao fazer login.');
-      throw error;
+      return null;
     }
   },
 
@@ -55,7 +54,7 @@ export const authService = {
     try {
       await api.post('/auth/register/professor', data);
       toast.success('Professor registrado com sucesso!');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro ao registrar professor:', error);
       toast.error(error?.response?.data?.message || 'Erro ao registrar professor.');
       throw error;
@@ -66,7 +65,7 @@ export const authService = {
     try {
       await api.post('/auth/register/adm', data);
       toast.success('Administrador registrado com sucesso!');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Erro ao registrar administrador:', error);
       toast.error(error?.response?.data?.message || 'Erro ao registrar administrador.');
       throw error;
@@ -75,7 +74,6 @@ export const authService = {
 
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(ROLE_KEY);
     toast.success('Logout realizado com sucesso!');
     window.location.href = '/login';
   },
@@ -94,16 +92,17 @@ export const authService = {
     }
   },
 
-  getRole(): string | null {
-    return localStorage.getItem(ROLE_KEY);
+  async getRole(): Promise<string | null> {
+    const user = await userService.getUser();
+    return user.role;
   },
 
-  isAdmin(): boolean {
-    return this.isAuthenticated() && this.getRole() === 'ROLE_ADMINISTRADOR';
+  async isAdmin(): Promise<boolean> {
+    return this.isAuthenticated() && await this.getRole() === 'ADMINISTRADOR';
   },
 
-  isProfessor(): boolean {
-    return this.isAuthenticated() && this.getRole() === 'ROLE_PROFESSOR';
+  async isProfessor(): Promise<boolean> {
+    return this.isAuthenticated() && await this.getRole() === 'PROFESSOR';
   },
 
   getUserInfo(): { authenticated: boolean; role: string | null } {
