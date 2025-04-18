@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
@@ -6,19 +5,25 @@ import axios from 'axios';
 
 interface ServerStatusCheckerProps {
   serverUrl: string;
+  shouldCheck?: boolean;
 }
 
-const ServerStatusChecker: React.FC<ServerStatusCheckerProps> = ({ serverUrl }) => {
+const ServerStatusChecker: React.FC<ServerStatusCheckerProps> = ({ serverUrl, shouldCheck = false }) => {
   const [status, setStatus] = useState<'checking' | 'online' | 'offline'>('checking');
   const [message, setMessage] = useState<string>('');
 
   useEffect(() => {
+    if (!shouldCheck) {
+      setStatus('online');
+      return;
+    }
+
     const checkServerStatus = async () => {
       try {
         // Usamos o axios diretamente para evitar interceptores
         await axios({
           method: 'get',
-          url: `${serverUrl}`,
+          url: `${serverUrl}/health`, // Rota pública para verificar saúde do servidor
           timeout: 5000, // 5 segundos
         });
         setStatus('online');
@@ -43,7 +48,7 @@ const ServerStatusChecker: React.FC<ServerStatusCheckerProps> = ({ serverUrl }) 
     };
 
     checkServerStatus();
-  }, [serverUrl]);
+  }, [serverUrl, shouldCheck]);
 
   if (status === 'checking') {
     return (

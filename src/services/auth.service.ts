@@ -36,6 +36,7 @@ export const authService = {
     try {
       const response = await api.post('/auth/login', credentials);
       const token = response.data?.token;
+      console.log(response)
 
       if (token) {
         localStorage.setItem(TOKEN_KEY, token);

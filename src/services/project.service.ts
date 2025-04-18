@@ -38,6 +38,7 @@ export const projectService = {
   async getAll(): Promise<Project[]> {
     try {
       const response = await api.get('/project');
+      console.log(response)
       return ensureArray(response.data);
     } catch (error) {
       console.error('Erro ao buscar projetos:', error);

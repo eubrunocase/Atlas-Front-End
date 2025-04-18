@@ -20,11 +20,6 @@ const FetchProfessorsButton = () => {
       const token = localStorage.getItem('atlas_token');
       const userRole = localStorage.getItem('atlas_role');
       
-      console.log("Verificando autenticação de usuário:");
-      console.log("Token existe:", !!token);
-      console.log("Papel do usuário:", userRole);
-      console.log("É admin?", authService.isAdmin());
-      
       if (!token) {
         setShowAuthAlert(true);
         setErrorMessage("Você precisa estar logado para acessar esta lista. Por favor, faça login primeiro.");
@@ -45,10 +40,7 @@ const FetchProfessorsButton = () => {
     setIsLoading(true);
     
     try {
-      console.log("Iniciando busca de professores...");
-      
       if (!authService.isAuthenticated()) {
-        console.log("Usuário não autenticado");
         setShowAuthAlert(true);
         setErrorMessage("Você precisa estar logado para acessar esta lista. Por favor, faça login primeiro.");
         toast.error("Você precisa estar logado para acessar esta lista");
@@ -60,7 +52,6 @@ const FetchProfessorsButton = () => {
       }
       
       if (!authService.isAdmin()) {
-        console.log("Usuário não é administrador");
         const userRole = localStorage.getItem('atlas_role');
         setShowAuthAlert(true);
         setErrorMessage(`Você está logado com o papel ${userRole}, mas este recurso requer o papel ADMINISTRADOR. Por favor, faça login com uma conta de administrador.`);
@@ -68,19 +59,14 @@ const FetchProfessorsButton = () => {
         return;
       }
       
-      console.log("Token JWT:", localStorage.getItem('atlas_token'));
-      console.log("Papel do usuário:", authService.getRole());
-      
       const result = await refetch();
-      console.log("Resultado da busca:", result);
       
-      if (professors && professors.length > 0) {
-        toast.success(`${professors.length} professores carregados com sucesso!`);
-        console.log("Professores carregados:", professors);
+      if (result.data && result.data.length > 0) {
+        toast.success(`${result.data.length} professores carregados com sucesso!`);
       } else {
         toast.success("Lista de professores carregada (vazia ou não disponível)");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao buscar professores:", error);
       
       if (error?.response?.status === 403) {
@@ -89,9 +75,6 @@ const FetchProfessorsButton = () => {
         toast.error(errorMsg);
         setShowAuthAlert(true);
         setErrorMessage(errorMsg);
-        
-        console.log("Role do usuário:", authService.getRole());
-        console.log("É admin?", authService.isAdmin());
       } else if (error?.response?.status === 401) {
         const errorMsg = "Autenticação necessária. Por favor, faça login novamente para acessar.";
         toast.error(errorMsg);

@@ -109,7 +109,7 @@ const LoginForm = () => {
         <CardHeader>
           <CardTitle>Login</CardTitle>
           <CardDescription>
-            Acesse o sistema plmds me salva - Fábrica de Software
+            Acesse o sistema Atlas - Fábrica de Software Ucsal
           </CardDescription>
         </CardHeader>
         <CardContent>

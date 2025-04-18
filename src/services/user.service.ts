@@ -12,7 +12,7 @@ export interface User {
 export const userService = {
     async getUser(): Promise<User | null> {
         try {
-            const response = await api.get("auth/profile");
+            const response = await api.get("/adm/profile");
             const user: User = {
                 id: response.data.id,
                 login: response.data.login,

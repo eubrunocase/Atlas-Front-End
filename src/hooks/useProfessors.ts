@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Professor, professorService } from "@/services/professor.service";
 import { toast } from "sonner";
@@ -15,6 +14,7 @@ export function useProfessors() {
   } = useQuery({
     queryKey: ["professors"],
     queryFn: professorService.getAll,
+    enabled: false, // Desabilita a execução automática
   });
 
   // Mutação para criar um novo professor

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -15,30 +14,49 @@ const AdminDashboard = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [professors, setProfessors] = useState<Professor[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("projects");
+
+  const fetchProjects = async () => {
+    try {
+      setLoading(true);
+      const projectsData = await projectService.getAll();
+      setProjects(projectsData);
+    } catch (error) {
+      console.error("Erro ao buscar projetos:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os projetos.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchProfessors = async () => {
+    try {
+      setLoading(true);
+      const professorsData = await professorService.getAll();
+      setProfessors(professorsData);
+    } catch (error) {
+      console.error("Erro ao buscar professores:", error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível carregar os professores.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [projectsData, professorsData] = await Promise.all([
-          projectService.getAll(),
-          professorService.getAll(),
-        ]);
-        setProjects(projectsData);
-        setProfessors(professorsData);
-      } catch (error) {
-        console.error("Erro ao buscar dados:", error);
-        toast({
-          title: "Erro",
-          description: "Não foi possível carregar os dados.",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [toast]);
+    if (activeTab === "projects") {
+      fetchProjects();
+    } else if (activeTab === "professors") {
+      fetchProfessors();
+    }
+  }, [activeTab]);
 
   const handleLogout = () => {
     authService.logout();
@@ -89,7 +107,7 @@ const AdminDashboard = () => {
         <Button variant="outline" onClick={handleLogout}>Sair</Button>
       </div>
 
-      <Tabs defaultValue="projects" className="space-y-6">
+      <Tabs defaultValue="projects" className="space-y-6" onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="projects">Projetos</TabsTrigger>
           <TabsTrigger value="professors">Professores</TabsTrigger>
@@ -125,7 +143,11 @@ const AdminDashboard = () => {
                       </div>
                       <p className="mt-2 text-sm">{project.objetivo}</p>
                       <div className="mt-4 flex justify-end space-x-2">
-                        <Button variant="outline" size="sm" onClick={() => handleUpdateProject(project.id!)}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleUpdateProject(project.id!)}
+                        >
                           Editar
                         </Button>
                         <Button 
