@@ -12,6 +12,7 @@ export interface LoginCredentials {
 export interface RegisterProfessorData {
   login: string;
   password: string;
+  escola: string;
 }
 
 export interface RegisterAdminData {

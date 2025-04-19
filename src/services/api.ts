@@ -2,7 +2,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: 'http://localhost:8080/atlas',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

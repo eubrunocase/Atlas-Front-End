@@ -1,4 +1,3 @@
-
 import api from './api';
 
 // Interface para professor
@@ -6,6 +5,7 @@ export interface Professor {
   id?: number;
   login: string;
   password?: string; // opcional para atualizações
+  escola: string;
 }
 
 // Função auxiliar para verificar e transformar a resposta da API

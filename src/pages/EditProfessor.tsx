@@ -1,15 +1,18 @@
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Professor, professorService } from "@/services/professor.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 
-const NewProfessor = () => {
+const EditProfessor = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const [isLoading, setIsLoading] = useState(true);
   
   const form = useForm<Professor>({
     defaultValues: {
@@ -19,25 +22,62 @@ const NewProfessor = () => {
     },
   });
 
+  useEffect(() => {
+    const fetchProfessor = async () => {
+      if (!id) return;
+      
+      try {
+        const professor = await professorService.getById(parseInt(id));
+        form.reset({
+          login: professor.login,
+          escola: professor.escola,
+          // Não preenchemos a senha por questões de segurança
+        });
+      } catch (error) {
+        console.error("Erro ao carregar professor:", error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os dados do professor.",
+          variant: "destructive",
+        });
+        navigate("/admin/dashboard");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProfessor();
+  }, [id, form, toast, navigate]);
+
   const onSubmit = async (data: Professor) => {
+    if (!id) return;
+    
     try {
-      await professorService.create(data);
+      await professorService.update(parseInt(id), data);
       
       toast({
-        title: "Professor cadastrado com sucesso",
-        description: "O professor foi cadastrado no sistema.",
+        title: "Professor atualizado com sucesso",
+        description: "As alterações foram salvas.",
       });
       
       navigate("/admin/dashboard");
     } catch (error) {
-      console.error("Erro ao cadastrar professor:", error);
+      console.error("Erro ao atualizar professor:", error);
       toast({
-        title: "Erro ao cadastrar professor",
-        description: "Não foi possível completar o cadastro.",
+        title: "Erro ao atualizar professor",
+        description: "Não foi possível salvar as alterações.",
         variant: "destructive",
       });
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center">Carregando...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -51,7 +91,7 @@ const NewProfessor = () => {
       
       <Card>
         <CardHeader>
-          <CardTitle>Cadastrar Novo Professor</CardTitle>
+          <CardTitle>Editar Professor</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -75,9 +115,13 @@ const NewProfessor = () => {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Senha</FormLabel>
+                    <FormLabel>Nova Senha</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="Senha" {...field} />
+                      <Input 
+                        type="password" 
+                        placeholder="Deixe em branco para manter a senha atual" 
+                        {...field} 
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -99,7 +143,7 @@ const NewProfessor = () => {
               />
               
               <div className="flex justify-end">
-                <Button type="submit">Cadastrar Professor</Button>
+                <Button type="submit">Salvar Alterações</Button>
               </div>
             </form>
           </Form>
@@ -109,4 +153,4 @@ const NewProfessor = () => {
   );
 };
 
-export default NewProfessor;
+export default EditProfessor; 
