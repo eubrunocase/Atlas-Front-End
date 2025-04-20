@@ -7,6 +7,8 @@ import { authService } from "@/services/auth.service";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import EditProfessorModal from "@/components/EditProfessorModal";
+import EditProjectModal from "@/components/EditProjectModal";
 
 const AdminDashboard = () => {
   const { toast } = useToast();
@@ -15,6 +17,10 @@ const AdminDashboard = () => {
   const [professors, setProfessors] = useState<Professor[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("projects");
+  const [selectedProfessor, setSelectedProfessor] = useState<Professor | null>(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isEditProfessorModalOpen, setIsEditProfessorModalOpen] = useState(false);
+  const [isEditProjectModalOpen, setIsEditProjectModalOpen] = useState(false);
 
   const fetchProjects = async () => {
     try {
@@ -69,6 +75,24 @@ const AdminDashboard = () => {
 
   const handleAddProfessor = () => {
     navigate("/admin/new-professor");
+  };
+
+  const handleEditProfessor = (professor: Professor) => {
+    setSelectedProfessor(professor);
+    setIsEditProfessorModalOpen(true);
+  };
+
+  const handleEditSuccess = () => {
+    fetchProfessors();
+  };
+
+  const handleEditProject = (project: Project) => {
+    setSelectedProject(project);
+    setIsEditProjectModalOpen(true);
+  };
+
+  const handleProjectEditSuccess = () => {
+    fetchProjects();
   };
 
   const getStatusLabel = (status: ProjectStatus) => {
@@ -146,7 +170,7 @@ const AdminDashboard = () => {
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          onClick={() => handleUpdateProject(project.id!)}
+                          onClick={() => handleEditProject(project)}
                         >
                           Editar
                         </Button>
@@ -201,12 +225,13 @@ const AdminDashboard = () => {
                       <div className="flex justify-between items-center">
                         <div>
                           <h3 className="text-lg font-medium">{professor.login}</h3>
+                          <p className="text-sm text-gray-500">{professor.escola}</p>
                         </div>
                         <div className="flex space-x-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => navigate(`/admin/professor/${professor.id}`)}
+                            onClick={() => handleEditProfessor(professor)}
                           >
                             Editar
                           </Button>
@@ -242,6 +267,30 @@ const AdminDashboard = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {selectedProfessor && (
+        <EditProfessorModal
+          isOpen={isEditProfessorModalOpen}
+          onClose={() => {
+            setIsEditProfessorModalOpen(false);
+            setSelectedProfessor(null);
+          }}
+          professor={selectedProfessor}
+          onSuccess={handleEditSuccess}
+        />
+      )}
+
+      {selectedProject && (
+        <EditProjectModal
+          isOpen={isEditProjectModalOpen}
+          onClose={() => {
+            setIsEditProjectModalOpen(false);
+            setSelectedProject(null);
+          }}
+          project={selectedProject}
+          onSuccess={handleProjectEditSuccess}
+        />
+      )}
     </div>
   );
 };
