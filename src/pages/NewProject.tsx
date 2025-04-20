@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -9,11 +8,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from "@/services/auth.service";
+import { useEffect, useState } from "react";
 
 const NewProject = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const isAdmin = authService.isAdmin();
+  const [userType, setUserType] = useState<"admin" | "professor">("professor");
+  
+  useEffect(() => {
+    const checkUserType = async () => {
+      const isAdmin = await authService.isAdmin();
+      setUserType(isAdmin ? "admin" : "professor");
+    };
+    checkUserType();
+  }, []);
   
   const form = useForm<Omit<Project, 'status'>>({
     defaultValues: {
@@ -41,11 +49,7 @@ const NewProject = () => {
       });
       
       // Redireciona para o dashboard apropriado
-      if (isAdmin) {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/professor/dashboard");
-      }
+      navigate(`/${userType}/dashboard`);
     } catch (error) {
       console.error("Erro ao criar projeto:", error);
       toast({
@@ -61,7 +65,7 @@ const NewProject = () => {
       <Button 
         variant="outline" 
         className="mb-6"
-        onClick={() => navigate(isAdmin ? "/admin/dashboard" : "/professor/dashboard")}
+        onClick={() => navigate(`/${userType}/dashboard`)}
       >
         Voltar
       </Button>
