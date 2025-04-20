@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,7 +27,7 @@ const AdminRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const ProfessorRoute = ({ children }: { children: React.ReactNode }) => {
-  if (!authService.isAuthenticated()) {
+  if (!authService.isAuthenticated() || !authService.isProfessor()) {
     return <Navigate to="/login" replace />;
   }
   return <>{children}</>;

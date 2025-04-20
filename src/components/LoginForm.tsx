@@ -13,10 +13,14 @@ import CorsErrorHelper from "./CorsErrorHelper";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, Info } from "lucide-react";
 import { userService } from "@/services/user.service";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const loginSchema = z.object({
   login: z.string().min(1, "Login é obrigatório"),
   password: z.string().min(1, "Senha é obrigatória"),
+  userType: z.enum(["admin", "professor"], {
+    required_error: "Selecione o tipo de usuário",
+  }),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -34,6 +38,7 @@ const LoginForm = () => {
     defaultValues: {
       login: "",
       password: "",
+      userType: "admin",
     },
   });
 
@@ -46,24 +51,25 @@ const LoginForm = () => {
     try {
       const credentials: LoginCredentials = {
         login: data.login,
-        password: data.password
+        password: data.password,
+        userType: data.userType
       };
 
       const response = await authService.login(credentials);
 
       if (response) {
-        const user = await userService.getUser();
-        console.log(user.role)
+        const user = await userService.getUser(data.userType);
+        console.log(user?.role)
         toast({
           title: "Login realizado com sucesso",
-          description: `Bem-vindo ao sistema! Você está logado como ${user.role}.`,
+          description: `Bem-vindo ao sistema! Você está logado como ${user?.role}.`,
         });
-      }
 
-      if (authService.isAdmin()) {
-        navigate("/admin/dashboard");
-      } else {
-        navigate("/professor/dashboard");
+        if (data.userType === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/professor/dashboard");
+        }
       }
     } catch (error) {
       console.log("Erro no login:", error);
@@ -137,6 +143,28 @@ const LoginForm = () => {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="userType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tipo de Usuário</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione o tipo de usuário" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="admin">Administrador</SelectItem>
+                        <SelectItem value="professor">Professor</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               <FormField
                 control={form.control}
                 name="login"

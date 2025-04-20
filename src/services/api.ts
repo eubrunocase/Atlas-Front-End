@@ -62,12 +62,6 @@ api.interceptors.response.use(
         }
       } else if (status === 403) {
         console.log('Erro 403 - Acesso negado');
-        const userRole = localStorage.getItem('atlas_role');
-        if (userRole) {
-          toast.error(`Acesso negado. Seu papel atual (${userRole}) não tem permissão para acessar este recurso.`);
-        } else {
-          toast.error('Acesso negado. Você não tem permissão para acessar este recurso.');
-        }
       } else if (status === 404) {
         toast.error('Recurso não encontrado no servidor.');
       } else if (status === 400) {

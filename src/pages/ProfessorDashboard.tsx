@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { projectService, Project, ProjectStatus } from "@/services/project.service";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from "@/services/auth.service";
 import { useNavigate } from "react-router-dom";
+import ProjectDetailsModal from "@/components/ProjectDetailsModal";
 
 const statusLabels: Record<ProjectStatus, string> = {
   [ProjectStatus.AGUARDANDO_ANALISE_PRELIMINAR]: "Aguardando Análise",
@@ -35,6 +35,8 @@ const ProfessorDashboard = () => {
   const navigate = useNavigate();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -63,6 +65,11 @@ const ProfessorDashboard = () => {
 
   const handleCreateProject = () => {
     navigate("/professor/new-project");
+  };
+
+  const handleViewDetails = (project: Project) => {
+    setSelectedProject(project);
+    setIsDetailsModalOpen(true);
   };
 
   return (
@@ -107,7 +114,7 @@ const ProfessorDashboard = () => {
                   </div>
                   <p className="mt-2 text-sm">{project.objetivo}</p>
                   <div className="mt-4 flex justify-end">
-                    <Button variant="outline" size="sm" onClick={() => navigate(`/professor/project/${project.id}`)}>
+                    <Button variant="outline" size="sm" onClick={() => handleViewDetails(project)}>
                       Detalhes
                     </Button>
                   </div>
@@ -117,6 +124,17 @@ const ProfessorDashboard = () => {
           )}
         </CardContent>
       </Card>
+
+      {selectedProject && (
+        <ProjectDetailsModal
+          isOpen={isDetailsModalOpen}
+          onClose={() => {
+            setIsDetailsModalOpen(false);
+            setSelectedProject(null);
+          }}
+          project={selectedProject}
+        />
+      )}
     </div>
   );
 };

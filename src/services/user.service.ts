@@ -5,14 +5,13 @@ export interface User {
     login: string,
     password: string,
     role: "ADMINISTRADOR" | "PROFESSOR",
-
 }
 
-
 export const userService = {
-    async getUser(): Promise<User | null> {
+    async getUser(userType: "admin" | "professor" = "admin"): Promise<User | null> {
         try {
-            const response = await api.get("/adm/profile");
+            const endpoint = userType === "admin" ? "/adm/profile" : "/professor/profile";
+            const response = await api.get(endpoint);
             const user: User = {
                 id: response.data.id,
                 login: response.data.login,

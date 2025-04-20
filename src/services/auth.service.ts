@@ -7,6 +7,7 @@ import { userService } from './user.service';
 export interface LoginCredentials {
   login: string;
   password: string;
+  userType: "admin" | "professor";
 }
 
 export interface RegisterProfessorData {
@@ -31,16 +32,17 @@ interface JwtPayload {
 }
 
 const TOKEN_KEY = 'atlas_token';
+const USER_TYPE_KEY = 'atlas_user_type';
 
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse | null> {
     try {
       const response = await api.post('/auth/login', credentials);
       const token = response.data?.token;
-      console.log(response)
 
       if (token) {
         localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem(USER_TYPE_KEY, credentials.userType);
         return response.data as AuthResponse;
       } else {
         throw new Error('Resposta de autenticação inválida.');
@@ -76,6 +78,7 @@ export const authService = {
 
   logout(): void {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_TYPE_KEY);
     toast.success('Logout realizado com sucesso!');
     window.location.href = '/login';
   },
@@ -95,8 +98,11 @@ export const authService = {
   },
 
   async getRole(): Promise<string | null> {
-    const user = await userService.getUser();
-    return user.role;
+    const userType = localStorage.getItem(USER_TYPE_KEY) as "admin" | "professor" | null;
+    if (!userType) return null;
+    
+    const user = await userService.getUser(userType);
+    return user?.role || null;
   },
 
   async isAdmin(): Promise<boolean> {

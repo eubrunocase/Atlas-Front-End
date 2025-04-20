@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { authService } from "@/services/auth.service";
 import { Button } from "@/components/ui/button";
-import { LogIn, UserPlus, ArrowRight, Code, Sparkles, CheckCircle } from "lucide-react";
+import { LogIn, ArrowRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
 const Index = () => {
@@ -68,7 +68,7 @@ const Index = () => {
           </motion.div>
           
           <motion.div
-            className="grid md:grid-cols-2 gap-8 mb-16"
+            className="max-w-md mx-auto"
             variants={container}
             initial="hidden"
             animate="show"
@@ -77,30 +77,10 @@ const Index = () => {
               className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300"
               variants={item}
             >
-              <div className="bg-blue-100 text-blue-600 rounded-full w-12 h-12 flex items-center justify-center mb-4">
-                <Code className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-800">Professores</h3>
-              <p className="text-gray-600 mb-4">
-                Solicite projetos para a Fábrica de Software e acompanhe todo o processo de desenvolvimento.
-              </p>
-              <Button
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium py-6 group"
-                onClick={() => navigate("/register")}
-              >
-                <UserPlus className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" /> 
-                Cadastrar como Professor
-              </Button>
-            </motion.div>
-            
-            <motion.div 
-              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300"
-              variants={item}
-            >
               <div className="bg-purple-100 text-purple-600 rounded-full w-12 h-12 flex items-center justify-center mb-4">
                 <Sparkles className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-semibold mb-2 text-gray-800">Já tem uma conta?</h3>
+              <h3 className="text-xl font-semibold mb-2 text-gray-800">Acesse sua conta</h3>
               <p className="text-gray-600 mb-4">
                 Faça login para acessar seu painel e gerenciar seus projetos.
               </p>
