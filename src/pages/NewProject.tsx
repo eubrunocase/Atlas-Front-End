@@ -17,8 +17,13 @@ const NewProject = () => {
   
   useEffect(() => {
     const checkUserType = async () => {
-      const isAdmin = await authService.isAdmin();
-      setUserType(isAdmin ? "admin" : "professor");
+      try {
+        const isAdmin = await authService.isAdmin();
+        setUserType(isAdmin ? "admin" : "professor");
+      } catch (error) {
+        console.error("Erro ao verificar tipo de usuário:", error);
+        setUserType("professor");
+      }
     };
     checkUserType();
   }, []);
@@ -35,7 +40,6 @@ const NewProject = () => {
 
   const onSubmit = async (data: Omit<Project, 'status'>) => {
     try {
-      // Para novos projetos, sempre começamos com status "aguardando análise"
       const projectData: Project = {
         ...data,
         status: ProjectStatus.AGUARDANDO_ANALISE_PRELIMINAR,
@@ -48,8 +52,7 @@ const NewProject = () => {
         description: "Seu projeto foi enviado para análise.",
       });
       
-      // Redireciona para o dashboard apropriado
-      navigate(`/${userType}/dashboard`);
+      navigate(-1);
     } catch (error) {
       console.error("Erro ao criar projeto:", error);
       toast({
@@ -65,7 +68,7 @@ const NewProject = () => {
       <Button 
         variant="outline" 
         className="mb-6"
-        onClick={() => navigate(`/${userType}/dashboard`)}
+        onClick={() => navigate(-1)}
       >
         Voltar
       </Button>
