@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EditProfessorModal from "@/components/EditProfessorModal";
 import EditProjectModal from "@/components/EditProjectModal";
+import { Plus, LogOut } from "lucide-react";
+import NewAdminModal from "@/components/NewAdminModal";
 
 const AdminDashboard = () => {
   const { toast } = useToast();
@@ -21,6 +23,7 @@ const AdminDashboard = () => {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isEditProfessorModalOpen, setIsEditProfessorModalOpen] = useState(false);
   const [isEditProjectModalOpen, setIsEditProjectModalOpen] = useState(false);
+  const [isNewAdminModalOpen, setIsNewAdminModalOpen] = useState(false);
 
   const fetchProjects = async () => {
     try {
@@ -64,9 +67,15 @@ const AdminDashboard = () => {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    if (!authService.isAuthenticated()) {
+      navigate("/login");
+    }
+  }, [navigate]);
+
   const handleLogout = () => {
     authService.logout();
-    navigate("/");
+    navigate("/login");
   };
 
   const handleUpdateProject = (projectId: number) => {
@@ -128,7 +137,19 @@ const AdminDashboard = () => {
           <h1 className="text-3xl font-bold">Painel Administrativo</h1>
           <p className="text-gray-600">Fábrica de Software - Gestão de Projetos</p>
         </div>
-        <Button variant="outline" onClick={handleLogout}>Sair</Button>
+        <div className="flex gap-4">
+          <Button
+            onClick={() => setIsNewAdminModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Administrador
+          </Button>
+          <Button variant="outline" onClick={handleLogout}>
+            <LogOut className="mr-2 h-4 w-4" />
+            Sair
+          </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="projects" className="space-y-6" onValueChange={setActiveTab}>
@@ -291,6 +312,14 @@ const AdminDashboard = () => {
           onSuccess={handleProjectEditSuccess}
         />
       )}
+
+      <NewAdminModal
+        isOpen={isNewAdminModalOpen}
+        onClose={() => setIsNewAdminModalOpen(false)}
+        onSuccess={() => {
+          // Aqui você pode adicionar lógica para atualizar a lista de administradores se necessário
+        }}
+      />
     </div>
   );
 };
