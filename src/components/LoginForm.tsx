@@ -194,17 +194,6 @@ const LoginForm = () => {
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Entrando..." : "Entrar"}
               </Button>
-
-              <div className="text-center mt-4">
-                <Button
-                  variant="link"
-                  className="p-0 text-sm text-gray-600"
-                  onClick={() => navigate("/register")}
-                  type="button"
-                >
-                  Não possui conta? Cadastre-se
-                </Button>
-              </div>
             </form>
           </Form>
         </CardContent>

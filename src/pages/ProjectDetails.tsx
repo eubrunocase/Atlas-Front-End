@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const statusLabels: Record<ProjectStatus, string> = {
-  [ProjectStatus.AGUARDANDO_ANALISE_PRELIMINAR]: "Aguardando Análise",
+  [ProjectStatus.AGUARDANDO_ANALISE_PRELIMINAR]: "Aguardando Análise Preliminar",
   [ProjectStatus.EM_ANALISE]: "Em Análise",
   [ProjectStatus.PROJETO_RECUSADO]: "Recusado",
   [ProjectStatus.EM_ANDAMENTO]: "Em Andamento",
@@ -121,7 +121,7 @@ const ProjectDetails = () => {
     return (
       <div className="container mx-auto px-4 py-8">
         <Alert variant="destructive">
-          <AlertTitle>Erro</AlertTitle>
+          <AlertTitle>Erro ao carregar projeto</AlertTitle>
           <AlertDescription>Projeto não encontrado.</AlertDescription>
         </Alert>
         <Button

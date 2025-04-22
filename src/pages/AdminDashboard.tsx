@@ -97,7 +97,7 @@ const AdminDashboard = () => {
 
   const getStatusLabel = (status: ProjectStatus) => {
     const labels = {
-      [ProjectStatus.AGUARDANDO_ANALISE_PRELIMINAR]: "Aguardando Análise",
+      [ProjectStatus.AGUARDANDO_ANALISE_PRELIMINAR]: "Aguardando Análise Preliminar",
       [ProjectStatus.EM_ANALISE]: "Em Análise",
       [ProjectStatus.PROJETO_RECUSADO]: "Recusado",
       [ProjectStatus.EM_ANDAMENTO]: "Em Andamento",
